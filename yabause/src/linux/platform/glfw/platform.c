@@ -1,4 +1,9 @@
 #include <stdio.h>
+
+#if defined(_USEGLEW_)
+#include <GL/glew.h>
+#endif
+
 #include <GLFW/glfw3.h>
 
 static GLFWwindow* g_window = NULL;
@@ -62,7 +67,9 @@ int platform_SetupOpenGL(int w, int h) {
 
   glfwMakeContextCurrent(g_window);
   glfwSwapInterval(0);
-//  glewExperimental=GL_TRUE;
+#if defined(_USEGLEW_)
+  glewExperimental=GL_TRUE;
+#endif
 
   glfwSetKeyCallback(g_window, key_callback);
   return 1;

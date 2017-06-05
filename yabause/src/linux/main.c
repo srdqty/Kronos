@@ -23,7 +23,11 @@
 #include <unistd.h>
 #include <sys/time.h>
 
-#include "platform.h"
+#if defined(_USEGLEW_)
+#include <GL/glew.h>
+#endif
+
+#include <platform.h>
 
 #include "../yabause.h"
 #include "../gameinfo.h"
@@ -223,8 +227,13 @@ void YuiInit() {
 static int SetupOpenGL() {
   int w = (lowres_mode == 0)?WINDOW_WIDTH:WINDOW_WIDTH_LOW;
   int h = (lowres_mode == 0)?WINDOW_HEIGHT:WINDOW_HEIGHT_LOW;
-  if (!platform_SetupOpenGL(w,h))
+#if defined(_USEGLEW_)
+  glewExperimental=GL_TRUE;
+#endif
+  if (!platform_SetupOpenGL(w,h)) {
+    printf("Error during openGL setup\n");
     exit(EXIT_FAILURE);
+  }
 }
 
 void displayGameInfo(char *filename) {

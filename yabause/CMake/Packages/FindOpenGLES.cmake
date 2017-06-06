@@ -56,6 +56,13 @@ ELSE (WIN32)
       /opt/vc/include
     )
 
+    FIND_PATH(OPENGLES3_INCLUDE_DIR GLES3/gl3.h
+      /usr/openwin/share/include
+      /opt/graphics/OpenGL/include /usr/X11R6/include
+      /usr/include
+      /opt/vc/include
+    )
+
     FIND_LIBRARY(OPENGLES_gl_LIBRARY
       NAMES GLES_CM GLESv1_CM
       PATHS /opt/graphics/OpenGL/lib
@@ -66,6 +73,15 @@ ELSE (WIN32)
     )
 
     FIND_LIBRARY(OPENGLES_gl2_LIBRARY
+      NAMES GLESv2
+      PATHS /opt/graphics/OpenGL/lib
+            /usr/openwin/lib
+            /usr/shlib /usr/X11R6/lib
+            /usr/lib
+            /opt/vc/lib
+    )
+
+    FIND_LIBRARY(OPENGLES_gl3_LIBRARY
       NAMES GLESv2
       PATHS /opt/graphics/OpenGL/lib
             /usr/openwin/lib
@@ -108,10 +124,20 @@ SET( OPENGLES2_LIBRARIES ${OPENGLES_gl2_LIBRARY} ${OPENGLES2_LIBRARIES})
 
 ENDIF(OPENGLES_gl2_LIBRARY)
 
+SET( OPENGLES3_FOUND "NO" )
+IF(OPENGLES_gl3_LIBRARY)
+SET( OPENGLES3_LIBRARIES ${OPENGLES_gl3_LIBRARY} ${OPENGLES3_LIBRARIES})
+
+    SET( OPENGLES3_FOUND "YES" )
+
+ENDIF(OPENGLES_gl3_LIBRARY)
+
 
 MARK_AS_ADVANCED(
   OPENGLES_INCLUDE_DIR
   OPENGLES2_INCLUDE_DIR
+  OPENGLES3_INCLUDE_DIR
   OPENGLES_gl_LIBRARY
   OPENGLES_gl2_LIBRARY
+  OPENGLES_gl3_LIBRARY
 )

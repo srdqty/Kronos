@@ -251,10 +251,10 @@ endif ()
 # OpenGL
 option(YAB_WANT_OPENGL "use OpenGL for video output (most ports require it)" ON)
 if (YAB_WANT_OPENGL AND (YAB_RGB STREQUAL ""))
-	include(FindOpenGL)
-	if (OPENGL_FOUND)
-		add_definitions(-DHAVE_LIBGL=1)
-		set(YABAUSE_LIBRARIES ${YABAUSE_LIBRARIES} ${OPENGL_LIBRARIES})
+        find_package(OpenGLES)
+        if (OPENGLES3_FOUND)
+		add_definitions(-DHAVE_LIBGLES=1)
+		set(YABAUSE_LIBRARIES ${YABAUSE_LIBRARIES} ${OPENGLES_gl3_LIBRARY})
 
 		include_directories(./ ./nanovg)
 		set(yabause_SOURCES ${yabause_SOURCES} 
@@ -263,58 +263,73 @@ if (YAB_WANT_OPENGL AND (YAB_RGB STREQUAL ""))
 			nanovg/nanovg_osdcore.c
 		)
 		add_definitions(-DYAB_PORT_OSD)
-		
-		include(FindGLUT)
-		if (GLUT_FOUND)
-			message (WARNING "Deprecated Glut found. Support will be removed in the future. ")
-			include_directories(${GLUT_INCLUDE_DIR})
-			add_definitions(-DHAVE_LIBGLUT=1)
-			set(YABAUSE_LIBRARIES ${YABAUSE_LIBRARIES} ${GLUT_LIBRARIES})
-		endif()
+                add_definitions(-DYAB_ASYNC_RENDERING)
 
 		# glXGetProcAddress
-		set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${OPENGL_LIBRARIES})
+		set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${OPENGLES_gl3_LIBRARY})
 		check_function_exists(glXGetProcAddress GLXGETPROCADDRESS_OK)
 		if (GLXGETPROCADDRESS_OK)
 			add_definitions(-DHAVE_GLXGETPROCADDRESS=1)
 		endif()
-		string(COMPARE EQUAL ${YAB_PORTS} "glfw" glfw)
-		if( glfw )
-			if (WIN32)
-				set( GLFW_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/glfw/include/ )
-			else()
-				find_package(PkgConfig REQUIRED)
-				pkg_search_module(GLFW REQUIRED glfw3)
-			endif()
-				include_directories( ${GLFW_INCLUDE_DIRS} )
-
-			add_definitions(-DYAB_ASYNC_RENDERING)
-		endif()
-		add_definitions(-D_OGL3_)
+		add_definitions(-D_OGLES3_)
 		if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-			add_definitions(-D_OGLES3_)
 			set(yabause_SOURCES ${yabause_SOURCES} 
 				yglcache.c
 				ygles.c
 				yglshaderes.c
 			)
 		endif()
-        include(FindGLEW)
-        add_definitions(-D_USEGLEW_)
-        if (GLEW_FOUND)
-            include_directories( ${GLEW_INCLUDE_DIRS})
-            set(YABAUSE_LIBRARIES ${YABAUSE_LIBRARIES} ${GLEW_LIBRARIES})
-        else()
-		    add_definitions(-DGLEW_STATIC)
-		    include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/gllibs/include/ )
-			set(yabause_SOURCES
-				${yabause_SOURCES}
-				gllibs/glew/glew.c
-				yglcache.c
-				ygles.c
-				yglshaderes.c )
-		endif()
-	endif(OPENGL_FOUND)
+	else (OPENGLES3_FOUND)
+		include(FindOpenGL)
+		if (OPENGL_FOUND)
+			add_definitions(-DHAVE_LIBGL=1)
+			set(YABAUSE_LIBRARIES ${YABAUSE_LIBRARIES} ${OPENGL_LIBRARIES})
+
+			include_directories(./ ./nanovg)
+			set(yabause_SOURCES ${yabause_SOURCES} 
+				nanovg/nanovg.c 
+				nanovg/nanovg_osdcore.h 
+				nanovg/nanovg_osdcore.c
+			)
+			add_definitions(-DYAB_PORT_OSD)
+		
+			include(FindGLUT)
+			if (GLUT_FOUND)
+				message (WARNING "Deprecated Glut found. Support will be removed in the future. ")
+				include_directories(${GLUT_INCLUDE_DIR})
+				add_definitions(-DHAVE_LIBGLUT=1)
+				set(YABAUSE_LIBRARIES ${YABAUSE_LIBRARIES} ${GLUT_LIBRARIES})
+			endif()
+
+			# glXGetProcAddress
+			set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES} ${OPENGL_LIBRARIES})
+			check_function_exists(glXGetProcAddress GLXGETPROCADDRESS_OK)
+			if (GLXGETPROCADDRESS_OK)
+				add_definitions(-DHAVE_GLXGETPROCADDRESS=1)
+			endif()
+			string(COMPARE EQUAL ${YAB_PORTS} "glfw" glfw)
+			if( glfw )
+				if (WIN32)
+					set( GLFW_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/glfw/include/ )
+				else()
+					find_package(PkgConfig REQUIRED)
+					pkg_search_module(GLFW REQUIRED glfw3)
+				endif()
+				include_directories( ${GLFW_INCLUDE_DIRS} )
+
+				add_definitions(-DYAB_ASYNC_RENDERING)
+			endif()
+			add_definitions(-D_OGL3_)
+			if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+				set(yabause_SOURCES ${yabause_SOURCES} 
+					yglcache.c
+					ygles.c
+					yglshaderes.c
+				)
+			endif()
+			set(yabause_SOURCES ${yabause_SOURCES} yglcache.c ygles.c yglshaderes.c )
+		endif(OPENGL_FOUND)
+        endif(OPENGLES3_FOUND)
 endif ()
 option(SPRITE_CACHE "Vdp1 sprite cache" OFF)
 if (SPRITE_CACHE)

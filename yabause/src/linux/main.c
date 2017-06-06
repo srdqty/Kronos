@@ -35,7 +35,7 @@
 #include "../peripheral.h"
 #include "../sh2core.h"
 #include "../sh2int.h"
-#ifdef HAVE_LIBGL
+#if defined(HAVE_LIBGL) || defined(HAVE_LIBGLES)
 #include "../vidogl.h"
 #include "../ygl.h"
 #endif
@@ -122,7 +122,7 @@ NULL
 
 VideoInterface_struct *VIDCoreList[] = {
 &VIDDummy,
-#ifdef HAVE_LIBGL
+#if defined(HAVE_LIBGL) || defined(HAVE_LIBGLES)
 &VIDOGL,
 #endif
 &VIDSoft,

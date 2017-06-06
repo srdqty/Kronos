@@ -22,7 +22,7 @@
 /*! \file vidogl.c
     \brief OpenGL video renderer
 */
-#if defined(HAVE_LIBGL) || defined(__ANDROID__) || defined(IOS)
+#if defined(HAVE_LIBGL) || defined(HAVE_LIBGLES) ||defined(__ANDROID__) || defined(IOS)
 
 #include <math.h>
 #define EPSILON (1e-10 )

@@ -31,7 +31,7 @@
 #include "vdp2.h"
 #include "titan/titan.h"
 
-#ifdef HAVE_LIBGL
+#if defined(HAVE_LIBGL) || defined(HAVE_LIBGLES)
 #define USE_OPENGL
 #endif
 
@@ -2260,9 +2260,9 @@ void VIDSoftSetupGL(void)
 
    outputwidth = vdp2width;
    outputheight = vdp2height;
-
+#if defined(_USEGLEW_)
    glewInit();
-
+#endif
    glGenVertexArrays(1, &vao);
    glBindVertexArray(vao);
 

@@ -18,13 +18,14 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-#if defined(HAVE_LIBGL) || defined(__ANDROID__) || defined(IOS)
+#if defined(HAVE_LIBGL) || defined(HAVE_LIBGLES) || defined(__ANDROID__) || defined(IOS)
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(_OGLES3_)
     #include <GLES3/gl3.h>
     #include <GLES3/gl3ext.h>
+#if defined(__ANDROID__)
     #include <EGL/egl.h>
-
+#endif
 
 #define GL_GEOMETRY_SHADER                0x8DD9
 
@@ -93,15 +94,9 @@ extern PFNGLMEMORYBARRIERPROC glMemoryBarrier;
 #elif defined(_WIN32)
 
 #include <windows.h>
-  #if defined(_USEGLEW_)
-    #include <GL/glew.h>
-    #include <GL/gl.h>
-    #include "glext.h"
-#else
     #include <GL/gl.h>
     #include "glext.h"
     extern PFNGLACTIVETEXTUREPROC glActiveTexture;
-#endif
 
 #elif defined(IOS)
 #include <OpenGLES/ES3/gl.h>
@@ -174,11 +169,12 @@ extern PFNGLMEMORYBARRIERPROC glMemoryBarrier;
     #include <OpenGL/gl3.h>
 
 #else // Linux?
-    #if defined(_OGLES3_)||defined(_OGL3_)
+    #if defined(_OGL3_)
         #define GL_GLEXT_PROTOTYPES 1
         #define GLX_GLXEXT_PROTOTYPES 1
-        #include <GL/glew.h>
+	#include <GL/glew.h>
         #include <GL/gl.h>
+        #include <GL/glext.h>
     #else
         #include <GL/gl.h>
     #endif

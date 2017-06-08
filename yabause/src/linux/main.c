@@ -137,6 +137,27 @@ NULL
 };
 #endif
 
+static int g_buf_width = -1;
+static int g_buf_height = -1;
+static GLuint g_FrameBuffer = 0;
+static GLuint g_VertexBuffer = 0;
+static GLuint programObject  = 0;
+static GLuint positionLoc    = 0;
+static GLuint texCoordLoc    = 0;
+static GLuint samplerLoc     = 0;
+static float swVertices [] = {
+   -1.0f, 1.0f, 0, 0,
+   1.0f, 1.0f, 1.0f, 0,
+   1.0f, -1.0f, 1.0f, 1.0f,
+   -1.0f,-1.0f, 0, 1.0f
+};
+
+static const float squareVertices [] = {
+   -1.0f, 1.0f, 0, 0,
+   1.0f, 1.0f, 1.0f, 0,
+   1.0f, -1.0f, 1.0f, 1.0f,
+   -1.0f,-1.0f, 0, 1.0f
+};
 static int fullscreen = 0;
 static int lowres_mode = 0;
 
@@ -183,8 +204,189 @@ static unsigned long time_left(void)
         return nextFrameTime - now;
 }
 
+static GLuint LoadShader ( GLenum type, const char *shaderSrc )
+{
+   GLuint shader;
+   GLint compiled;
+
+   // Create the shader object
+   shader = glCreateShader ( type );
+   if ( shader == 0 )
+    return 0;
+   // Load the shader source
+   glShaderSource ( shader, 1, &shaderSrc, NULL );
+   // Compile the shader
+   glCompileShader ( shader );
+   // Check the compile status
+   glGetShaderiv ( shader, GL_COMPILE_STATUS, &compiled );
+   if ( !compiled )
+   {
+      GLint infoLen = 0;
+      glGetShaderiv ( shader, GL_INFO_LOG_LENGTH, &infoLen );
+      if ( infoLen > 1 )
+      {
+         char* infoLog = malloc (sizeof(char) * infoLen );
+         glGetShaderInfoLog ( shader, infoLen, NULL, infoLog );
+         printf ( "Error compiling shader:\n%s\n", infoLog );
+         free ( infoLog );
+      }
+      glDeleteShader ( shader );
+      return 0;
+   }
+   return shader;
+
+}
+
+static int YuiInitProgramForSoftwareRendering()
+{
+   GLbyte vShaderStr[] =
+#if defined (_OGLES3_)
+      "#version 300 es \n"
+#else
+      "#version 330 \n"
+#endif
+      "in vec2 a_position;   \n"
+      "in vec2 a_texCoord;   \n"
+      "out vec2 v_texCoord;     \n"
+      "void main()                  \n"
+      "{                            \n"
+      "   gl_Position = vec4(a_position.xy, 0.0, 1.0); \n"
+      "   v_texCoord = a_texCoord;  \n"
+      "}                            \n";
+
+   GLbyte fShaderStr[] =
+#if defined (_OGLES3_)
+      "#version 300 es \n"
+#else
+      "#version 330 \n"
+#endif
+      "precision mediump float;                            \n"
+      "in vec2 v_texCoord;                            \n"
+      "uniform sampler2D s_texture;                        \n"
+      "out vec4 fragColor;            \n"
+      "void main()                                         \n"
+      "{                                                   \n"
+      "  fragColor = texture2D( s_texture, v_texCoord );\n"
+      "}                                                   \n";
+
+   GLuint vertexShader;
+   GLuint fragmentShader;
+   GLint linked;
+
+   // Load the vertex/fragment shaders
+   vertexShader = LoadShader ( GL_VERTEX_SHADER, vShaderStr );
+   fragmentShader = LoadShader ( GL_FRAGMENT_SHADER, fShaderStr );
+
+   // Create the program object
+   programObject = glCreateProgram ( );
+
+   if ( programObject == 0 )
+      return 0;
+
+   glAttachShader ( programObject, vertexShader );
+   glAttachShader ( programObject, fragmentShader );
+
+   // Link the program
+   glLinkProgram ( programObject );
+
+   // Check the link status
+   glGetProgramiv ( programObject, GL_LINK_STATUS, &linked );
+
+   if ( !linked )
+   {
+      GLint infoLen = 0;
+
+      glGetProgramiv ( programObject, GL_INFO_LOG_LENGTH, &infoLen );
+
+      if ( infoLen > 1 )
+      {
+        char* infoLog = malloc (sizeof(char) * infoLen );
+        glGetProgramInfoLog ( programObject, infoLen, NULL, infoLog );
+        printf ( "Error linking program:\n%s\n", infoLog );
+        free ( infoLog );
+         return;
+      }
+
+      glDeleteProgram ( programObject );
+      return GL_FALSE;
+   }
+
+
+   // Get the attribute locations
+   positionLoc = glGetAttribLocation ( programObject, "a_position" );
+   texCoordLoc = glGetAttribLocation ( programObject, "a_texCoord" );
+
+   // Get the sampler location
+   samplerLoc = glGetUniformLocation ( programObject, "s_texture" );
+
+   glUseProgram(programObject);
+
+
+   return GL_TRUE;
+}
+
+static void YuidrawSoftwareBuffer() {
+
+    int buf_width, buf_height;
+    int error;
+
+    glClearColor( 0.0f,0.0f,0.0f,1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    if( g_FrameBuffer == 0 )
+    {
+       glGenTextures(1,&g_FrameBuffer);
+       glActiveTexture ( GL_TEXTURE0 );
+       glBindTexture(GL_TEXTURE_2D, g_FrameBuffer);
+       //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 512, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+       glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+       glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+       error = glGetError();
+       if( error != GL_NO_ERROR )
+       {
+          printf("g_FrameBuffer gl error %04X\n", error );
+          return;
+       }
+    }else{
+       glBindTexture(GL_TEXTURE_2D, g_FrameBuffer);
+    }
+
+    VIDCore->GetGlSize(&buf_width, &buf_height);
+    if ((buf_width == 0) || (buf_height == 0)) return;
+    //glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,512,256,GL_RGBA,GL_UNSIGNED_SHORT_1_5_5_5_REV_EXT,dispbuffer);
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, buf_width, buf_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, dispbuffer);
+    if( buf_width != g_buf_width ||  buf_height != g_buf_width )
+      {
+          int i;
+	  memcpy(swVertices, squareVertices, sizeof(swVertices));
+          //swVertices[6]=swVertices[10]=(float)buf_width/1024.0f;
+          //swVertices[11]=swVertices[15]=(float)buf_height/1024.0f;
+          g_buf_width  = buf_width;
+          g_buf_width = buf_height;
+          //glViewport(0, 0,buf_width, buf_height);
+       }
+
+    if( g_VertexBuffer == 0 )
+   {
+      glGenBuffers(1, &g_VertexBuffer);
+   }
+   glBindBuffer(GL_ARRAY_BUFFER, g_VertexBuffer);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(squareVertices),swVertices,GL_STATIC_DRAW);
+   glVertexAttribPointer ( positionLoc, 2, GL_FLOAT,  GL_FALSE, 4 * sizeof(GLfloat), 0 );
+   glVertexAttribPointer ( texCoordLoc, 2, GL_FLOAT,  GL_FALSE, 4 * sizeof(GLfloat), (void*)(sizeof(float)*2) );
+   glEnableVertexAttribArray ( positionLoc );
+   glEnableVertexAttribArray ( texCoordLoc );
+   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+
 void YuiSwapBuffers(void) {
 
+   if( yinit.vidcoretype == VIDCORE_SOFT ){
+       YuidrawSoftwareBuffer();
+   }
    platform_swapBuffers();
    SetOSDToggle(1);
 
@@ -229,6 +431,7 @@ static int SetupOpenGL() {
   int h = (lowres_mode == 0)?WINDOW_HEIGHT:WINDOW_HEIGHT_LOW;
 #if defined(_USEGLEW_)
   glewExperimental=GL_TRUE;
+  glewInit();
 #endif
   if (!platform_SetupOpenGL(w,h)) {
     printf("Error during openGL setup\n");
@@ -332,9 +535,16 @@ int main(int argc, char *argv[]) {
   }
   SetupOpenGL();
 
-	YabauseDeInit();
+  YabauseDeInit();
 
   if (YabauseInit(&yinit) != 0) printf("YabauseInit error \n\r");
+
+  if (yinit.vidcoretype == VIDCORE_SOFT) {
+    if( YuiInitProgramForSoftwareRendering() != GL_TRUE ){
+      printf("Fail to YuiInitProgramForSoftwareRendering\n");
+      return -1;
+    }
+  }
 
   if (yinit.vidcoretype == VIDCORE_OGL) {
     if (lowres_mode == 0){

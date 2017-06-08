@@ -17,15 +17,21 @@
     along with Yabause; if not, write to the Free Software
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
+#if defined(HAVE_LIBGLES)
+#if defined(_OGLES3_)
+    #include <GLES3/gl32.h>
+    #include <GLES3/gl3ext.h>
+#endif
+#endif
 
 #if defined(HAVE_LIBGL) || defined(HAVE_LIBGLES) || defined(__ANDROID__) || defined(IOS)
 
-#if defined(__ANDROID__) || defined(_OGLES3_)
-    #include <GLES3/gl3.h>
+#if defined(__ANDROID__) 
+    #include <GLES3/gl31.h>
     #include <GLES3/gl3ext.h>
-#if defined(__ANDROID__)
     #include <EGL/egl.h>
-#endif
+
+//#define GL_UNSIGNED_SHORT_1_5_5_5_REV_EXT    0x8366
 
 #define GL_GEOMETRY_SHADER                0x8DD9
 
@@ -94,10 +100,15 @@ extern PFNGLMEMORYBARRIERPROC glMemoryBarrier;
 #elif defined(_WIN32)
 
 #include <windows.h>
+  #if defined(_USEGLEW_)
+    #include <GL/glew.h>
+    #include <GL/gl.h>
+    #include "glext.h"
+#else
     #include <GL/gl.h>
     #include "glext.h"
     extern PFNGLACTIVETEXTUREPROC glActiveTexture;
-
+#endif
 #elif defined(IOS)
 #include <OpenGLES/ES3/gl.h>
 #include <OpenGLES/ES3/glext.h>

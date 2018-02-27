@@ -18,6 +18,7 @@
 	along with Yabause; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
+#include <QOpenGLContext>
 #include "YabauseGL.h"
 #include "QtYabause.h"
 
@@ -26,10 +27,24 @@ YabauseGL::YabauseGL( QWidget* p )
 {
 	setFocusPolicy( Qt::StrongFocus );
 
-  QGLFormat fmt;
-  fmt.setProfile(QGLFormat::CompatibilityProfile);
-  fmt.setSwapInterval(0);
-  setFormat(fmt);
+        QGLFormat fmt;
+        fmt.setDepthBufferSize(24);
+        fmt.setSamples(4);
+        fmt.setRedBufferSize(8);
+        fmt.setGreenBufferSize(8);
+        fmt.setBlueBufferSize(8);
+        fmt.setAlphaBufferSize(8);
+        fmt.setStencilBufferSize(8);
+        fmt.setSwapInterval(1);
+        if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
+           printf("Requesting OpenGL 3.3\n");
+           fmt.setProfile(QGLFormat::CoreProfile);
+           //fmt.setVersion(3, 3);
+        } else {
+           printf("Requesting OpenGLES 3.0\n");
+           fmt.setVersion(3, 0);
+        }
+        setFormat(fmt);
 
 	if ( p ) {
 		p->setFocusPolicy( Qt::StrongFocus );

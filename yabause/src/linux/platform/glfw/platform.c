@@ -181,7 +181,7 @@ int platform_SetupOpenGL(int w, int h, int fullscreen) {
   g_offscreen_context = glfwCreateWindow(w,h, "", NULL, g_window);
 
   glfwMakeContextCurrent(g_window);
-  glfwSwapInterval(0);
+  glfwSwapInterval(1);
 #if defined(_USEGLEW_)
   glewExperimental=GL_TRUE;
 #endif

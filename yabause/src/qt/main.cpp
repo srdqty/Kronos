@@ -19,6 +19,8 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 #include <QApplication>
+#include <QOpenGLContext>
+#include <QGLFormat>
 
 #include "QtYabause.h"
 #include "Settings.h"
@@ -29,6 +31,19 @@
 
 int main( int argc, char** argv )
 {
+
+        QSurfaceFormat fmt;
+        fmt.setDepthBufferSize(24);
+        fmt.setSamples(4);
+        fmt.setRedBufferSize(8);
+        fmt.setGreenBufferSize(8);
+        fmt.setBlueBufferSize(8);
+        fmt.setAlphaBufferSize(8);
+        fmt.setStencilBufferSize(8);
+        fmt.setSwapInterval(1);
+        fmt.setRenderableType(QSurfaceFormat::OpenGLES);
+        QSurfaceFormat::setDefaultFormat(fmt);
+
 	// create application
 	QApplication app( argc, argv );
 	// init application
@@ -45,8 +60,13 @@ int main( int argc, char** argv )
 #endif
 	// show main window
 	QtYabause::mainWindow()->setWindowTitle( app.applicationName() );
-	QtYabause::mainWindow()->show();
-	// connection
+	QtYabause::mainWindow()->show(); 
+        QSurfaceFormat exactFmt = QOpenGLContext::currentContext()->format();
+        if (QOpenGLContext::currentContext()->isOpenGLES())
+          printf("Use OpenGLES %d.%d\n", exactFmt.majorVersion(), exactFmt.minorVersion() );
+        else
+          printf("Use OpenGL %d.%d\n", exactFmt.majorVersion(), exactFmt.minorVersion() );
+
 	QObject::connect( &app, SIGNAL( lastWindowClosed() ), &app, SLOT( quit() ) );
 	// exec application
 	int i = app.exec();

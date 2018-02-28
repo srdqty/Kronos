@@ -580,6 +580,7 @@ typedef struct {
    UniformFrameBuffer fbu_;
    GLuint framebuffer_uniform_id_;
    int msb_shadow_count_[2];
+   GLuint vao;
 
 }  Ygl;
 

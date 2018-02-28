@@ -34,6 +34,8 @@
 //#define YGLDEBUG yprintf
 //#define YGLLOG yprintf
 
+//#define __USE_OPENGL_DEBUG__
+
 extern u8 * Vdp1FrameBuffer[];
 static int rebuild_frame_buffer = 0;
 
@@ -1144,6 +1146,22 @@ void YuiSetVideoAttribute(int type, int val){
 }
 
 //////////////////////////////////////////////////////////////////////////////
+#if defined(__USE_OPENGL_DEBUG__)
+static void MessageCallback( GLenum source,
+                      GLenum type,
+                      GLuint id,
+                      GLenum severity,
+                      GLsizei length,
+                      const GLchar* message,
+                      const void* userParam )
+{
+  printf("GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+           ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message );
+}
+#endif
+
+
 int YglInit(int width, int height, unsigned int depth) {
   unsigned int i,j;
   int major = 0, minor = 0;
@@ -1210,6 +1228,17 @@ int YglInit(int width, int height, unsigned int depth) {
   glGetIntegerv(GL_MINOR_VERSION, &minor);
   printf("Using %s\n", glGetString(GL_VERSION));
   printf("Context %d.%d\n", major, minor);
+
+
+  glGenVertexArrays(1, &_Ygl->vao);
+  glBindVertexArray(_Ygl->vao);
+  glEnableVertexAttribArray(_Ygl->vao);
+
+#if defined(__USE_OPENGL_DEBUG__)
+  // During init, enable debug output
+  glEnable              ( GL_DEBUG_OUTPUT );
+  glDebugMessageCallback( (GLDEBUGPROC) MessageCallback, 0 );
+#endif
 
   _Ygl->default_fbo = 0;
   _Ygl->drawframe = 0;
@@ -2633,6 +2662,8 @@ void YglRenderVDP1(void) {
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, YglTM->textureID);
 
+  glBindVertexArray(_Ygl->vao);
+
   for( j=0;j<(level->prgcurrent+1); j++ ) {
     if( level->prg[j].prgid != cprg ) {
       cprg = level->prg[j].prgid;
@@ -3180,6 +3211,7 @@ void YglRender(void) {
    glDepthMask(GL_TRUE);
    glEnable(GL_DEPTH_TEST);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+   glBindVertexArray(_Ygl->vao);
 
    if ((Vdp2Regs->TVMD & 0x8000) == 0){
      goto render_finish;

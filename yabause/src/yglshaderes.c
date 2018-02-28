@@ -1577,7 +1577,7 @@ const GLchar Yglprg_vdp2_drawfb_cram_f[] =
 "#version 300 es \n"
 "precision highp sampler2D; \n"
 #else
-"#version 430 \n"
+"#version 330 \n"
 #endif
 "precision highp float;\n"
 "layout(std140) uniform vdp2regs { \n"
@@ -1692,7 +1692,7 @@ const GLchar Yglprg_vdp2_drawfb_hblank_f[] =
 "#version 300 es \n"
 "precision highp sampler2D; \n"
 #else
-"#version 430 \n"
+"#version 330 \n"
 #endif
 "precision highp float;\n"
 "layout(std140) uniform vdp2regs { \n"
@@ -1823,7 +1823,7 @@ const GLchar Yglprg_vdp2_drawfb_shadow_f[] =
 "#version 300 es \n"
 "precision highp sampler2D; \n"
 #else
-"#version 430 \n"
+"#version 330 \n"
 #endif
 "precision highp float;\n"
 "layout(std140) uniform vdp2regs { \n"

@@ -38,8 +38,8 @@ YabauseGL::YabauseGL( QWidget* p )
         fmt.setSwapInterval(1);
         if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
            printf("Requesting OpenGL 3.3\n");
-           fmt.setProfile(QGLFormat::CoreProfile);
-           //fmt.setVersion(3, 3);
+           fmt.setProfile(QGLFormat::CompatibilityProfile);
+           fmt.setVersion(3, 3);
         } else {
            printf("Requesting OpenGLES 3.0\n");
            fmt.setVersion(3, 0);

@@ -1146,6 +1146,7 @@ void YuiSetVideoAttribute(int type, int val){
 //////////////////////////////////////////////////////////////////////////////
 int YglInit(int width, int height, unsigned int depth) {
   unsigned int i,j;
+  int major = 0, minor = 0;
   void * dataPointer=NULL;
   YGLLOG("YglInit(%d,%d,%d);",width,height,depth );
 
@@ -1204,6 +1205,11 @@ int YglInit(int width, int height, unsigned int depth) {
 #endif
 
   glGetError();
+
+  glGetIntegerv(GL_MAJOR_VERSION, &major);
+  glGetIntegerv(GL_MINOR_VERSION, &minor);
+  printf("Using %s\n", glGetString(GL_VERSION));
+  printf("Context %d.%d\n", major, minor);
 
   _Ygl->default_fbo = 0;
   _Ygl->drawframe = 0;

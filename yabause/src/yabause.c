@@ -142,9 +142,9 @@ static int autoframeskipenab=0;
 static void syncVideoMode(void) {
   unsigned long sleep = 0;
   unsigned long now = YabauseGetTicks();
-  if (nextFrameTime == 0) nextFrameTime = YabauseGetTicks(); 
-  if(nextFrameTime > now)
-    sleep = ((nextFrameTime - now)*1000000.0)/yabsys.tickfreq;
+  if (nextFrameTime == 0) nextFrameTime = now; 
+  if (nextFrameTime > now)
+	  sleep = ((nextFrameTime - now)*1000000.0) / yabsys.tickfreq;
   //else
   //  nextFrameTime = now;
   if (isAutoFrameSkip() == 0) YabThreadUSleep(sleep);

@@ -407,6 +407,9 @@ typedef struct {
    float * quads;
    float * textcoords;
    float * vertexAttribute;
+   GLuint quads_buf;
+   GLuint textcoords_buf;
+   GLuint vertexAttribute_buf;
    int currentQuad;
    int maxQuad;
    int vaid;
@@ -619,6 +622,11 @@ typedef struct {
    UniformFrameBuffer fbu_;
    GLuint framebuffer_uniform_id_;
    int msb_shadow_count_[2];
+   GLuint vao;
+   GLuint vertices_buf;
+   GLuint texcord_buf;
+   GLuint win0v_buf;
+   GLuint win1v_buf;
 
 }  Ygl;
 

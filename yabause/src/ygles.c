@@ -32,11 +32,11 @@
 
 #define __USE_OPENGL_DEBUG__
 
-#define YGLDEBUG
+#define YGLDEBUG printf
 //#define YGLDEBUG printf
 //#define YGLDEBUG LOG
 //#define YGLDEBUG yprintf
-//#define YGLLOG yprintf
+#define YGLLOG printf
 
 extern u8 * Vdp1FrameBuffer[];
 static int rebuild_frame_buffer = 0;
@@ -1119,6 +1119,11 @@ int YglInit(int width, int height, unsigned int depth) {
   glGenBuffers(1, &_Ygl->texcord_buf);
   glGenBuffers(1, &_Ygl->win0v_buf);
   glGenBuffers(1, &_Ygl->win1v_buf);
+  glGenBuffers(1, &_Ygl->vertexPosition_buf);
+  glGenBuffers(1, &_Ygl->textureCoordFlip_buf);
+  glGenBuffers(1, &_Ygl->textureCoord_buf);
+  glGenBuffers(1, &_Ygl->vb_buf);
+  glGenBuffers(1, &_Ygl->tb_buf);
   //glEnableVertexAttribArray(_Ygl->vao);
 
 #if defined(__USE_OPENGL_DEBUG__)

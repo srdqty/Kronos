@@ -627,6 +627,11 @@ typedef struct {
    GLuint texcord_buf;
    GLuint win0v_buf;
    GLuint win1v_buf;
+   GLuint vertexPosition_buf;
+   GLuint textureCoordFlip_buf;
+   GLuint textureCoord_buf;
+   GLuint vb_buf;
+   GLuint tb_buf;
 
 }  Ygl;
 

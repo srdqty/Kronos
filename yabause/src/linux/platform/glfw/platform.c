@@ -186,6 +186,12 @@ int platform_SetupOpenGL(int w, int h, int fullscreen) {
   glewExperimental=GL_TRUE;
 #endif
 
+   int maj, min;
+   glGetIntegerv(GL_MAJOR_VERSION, &maj);
+   glGetIntegerv(GL_MINOR_VERSION, &min);
+   
+  printf("OpenGL version is %d.%d (%s, %s)\n", maj, min, glGetString(GL_VENDOR), glGetString(GL_RENDERER));
+
   for (i=0; i< 512; i++)
     inputMap[i] = -1;
 

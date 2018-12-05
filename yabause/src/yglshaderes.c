@@ -113,6 +113,7 @@ int ShaderDrawTest()
   glVertexAttribPointer(vertexp, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*)vec);
   glVertexAttribPointer(texcoordp, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid*)tex);
 
+
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
   return 0;
@@ -1412,7 +1413,8 @@ int Ygl_uniformStartUserClip(void * p, YglTextureManager *tm, Vdp2 *varVdp2Regs 
       glUniformMatrix4fv( prg->mtxModelView, 1, GL_FALSE, (GLfloat*) &_Ygl->mtxModelView.m[0][0]  );
       glBindBuffer(GL_ARRAY_BUFFER, _Ygl->vertices_buf);
       glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
-      glVertexAttribPointer(prg->vertexp,2, GL_INT,GL_FALSE, 0, (GLvoid*)vertices );
+      glVertexAttribPointer(prg->vertexp,2, GL_INT,GL_FALSE, 0, 0 );
+      glEnableVertexAttribArray(prg->vertexp);
 
       glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -2903,8 +2905,10 @@ int YglProgramChange( YglLevel * level, int prgid )
    level->prg[level->prgcurrent].vaid = 0;
    level->prg[level->prgcurrent].id = 0;
 
-   if (level->prg[level->prgcurrent].quads_buf == 0)
+   if (level->prg[level->prgcurrent].quads_buf == 0) {
+printf("Create quad buf %d\n", level->prgcurrent);
       glGenBuffers(1, &level->prg[level->prgcurrent].quads_buf);
+   }
    if (level->prg[level->prgcurrent].textcoords_buf == 0)
       glGenBuffers(1, &level->prg[level->prgcurrent].textcoords_buf);
    if (level->prg[level->prgcurrent].vertexAttribute_buf == 0)
@@ -3351,7 +3355,8 @@ int YglDrawBackScreen(float w, float h) {
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, _Ygl->vertexPosition_buf);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPosition), vertexPosition, GL_STREAM_DRAW);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, vertexPosition);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(0);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, _Ygl->back_tex);
@@ -3485,16 +3490,19 @@ int YglBlitVDP1(u32 srcTexture, float w, float h, int flip) {
   glEnableVertexAttribArray(1);
   glBindBuffer(GL_ARRAY_BUFFER, _Ygl->vertexPosition_buf);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPosition), vertexPosition, GL_STREAM_DRAW);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, vertexPosition);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(0);
   if (flip == 1){
      glBindBuffer(GL_ARRAY_BUFFER, _Ygl->textureCoordFlip_buf);
      glBufferData(GL_ARRAY_BUFFER, sizeof(textureCoordFlip), textureCoordFlip, GL_STREAM_DRAW);
-     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, textureCoordFlip);
+     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+     glEnableVertexAttribArray(1);
   }
   else{
      glBindBuffer(GL_ARRAY_BUFFER, _Ygl->textureCoord_buf);
      glBufferData(GL_ARRAY_BUFFER, sizeof(textureCoord), textureCoord, GL_STREAM_DRAW);
-     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, textureCoord);
+     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+     glEnableVertexAttribArray(1);
   }
 
   glActiveTexture(GL_TEXTURE0);
@@ -3738,12 +3746,14 @@ int YglBlitFramebuffer(u32 srcTexture, u32 targetFbo, float w, float h, float di
   glEnableVertexAttribArray(1);
   glBindBuffer(GL_ARRAY_BUFFER, _Ygl->vertexPosition_buf);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPosition), vertexPosition, GL_STREAM_DRAW);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, vertexPosition);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(0);
   if (textureCoord_buf[yabsys.isRotated * 8] == 0)
      glGenBuffers(1, &textureCoord_buf[yabsys.isRotated * 8]);
   glBindBuffer(GL_ARRAY_BUFFER, textureCoord_buf[yabsys.isRotated * 8]);
   glBufferData(GL_ARRAY_BUFFER, sizeof(&textureCoord[yabsys.isRotated * 8]), &textureCoord[yabsys.isRotated * 8], GL_STREAM_DRAW);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, &textureCoord[yabsys.isRotated * 8]);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(1);
   glUniform1f(u_w, width);
   glUniform1f(u_h, height);
   glUniform2f(u_l, nbLines, disph);
@@ -3853,7 +3863,8 @@ int YglClear() {
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, _Ygl->vertexPosition_buf);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPosition), vertexPosition, GL_STREAM_DRAW);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, vertexPosition);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(0);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
   // Clean up
@@ -3989,9 +4000,11 @@ int YglBlitBlur(u32 srcTexture, u32 targetFbo, float w, float h, GLfloat* matrix
   glBindBuffer(GL_ARRAY_BUFFER, _Ygl->vb_buf);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vb), vb, GL_STREAM_DRAW);
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, vb);
+  glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, _Ygl->tb_buf);
   glBufferData(GL_ARRAY_BUFFER, sizeof(tb), tb, GL_STREAM_DRAW);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, tb);
+  glEnableVertexAttribArray(1);
   glUniformMatrix4fv(u_blur_mtxModelView, 1, GL_FALSE, matrix);
   glUniform1f(u_blur_tw, w);
   glUniform1f(u_blur_th, h);
@@ -4139,10 +4152,12 @@ int YglBlitMosaic(u32 srcTexture, u32 targetFbo, float w, float h, GLfloat* matr
   glEnableVertexAttribArray(1);
   glBindBuffer(GL_ARRAY_BUFFER, _Ygl->vb_buf);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vb), vb, GL_STREAM_DRAW);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, vb);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, _Ygl->tb_buf);
   glBufferData(GL_ARRAY_BUFFER, sizeof(tb), tb, GL_STREAM_DRAW);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, tb);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(1);
   glUniformMatrix4fv(u_mosaic_mtxModelView, 1, GL_FALSE, matrix);
   glUniform1f(u_mosaic_tw, w);
   glUniform1f(u_mosaic_th, h);
@@ -4308,10 +4323,12 @@ int YglBlitPerLineAlpha(u32 srcTexture, u32 targetFbo, float w, float h, GLfloat
   glEnableVertexAttribArray(1);
   glBindBuffer(GL_ARRAY_BUFFER, _Ygl->vb_buf);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vb), vb, GL_STREAM_DRAW);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, vb);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, _Ygl->tb_buf);
   glBufferData(GL_ARRAY_BUFFER, sizeof(tb), tb, GL_STREAM_DRAW);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, tb);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(1);
   glUniformMatrix4fv(u_perlinealpha_mtxModelView, 1, GL_FALSE, matrix);
   glUniform1f(u_perlinealpha_tw, w);
   glUniform1f(u_perlinealpha_th, h);

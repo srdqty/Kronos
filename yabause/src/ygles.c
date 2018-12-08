@@ -30,9 +30,9 @@
 #include "error.h"
 
 
-#define __USE_OPENGL_DEBUG__
+//#define __USE_OPENGL_DEBUG__
 
-#define YGLDEBUG printf
+#define YGLDEBUG
 //#define YGLDEBUG printf
 //#define YGLDEBUG LOG
 //#define YGLDEBUG yprintf

@@ -2859,7 +2859,6 @@ int YglProgramChange( YglLevel * level, int prgid )
    int maxsize;
 #endif
 
-   glBindVertexArray(_Ygl->vao);
    level->prgcurrent++;
 
    if( level->prgcurrent >= level->prgcount)
@@ -2906,7 +2905,6 @@ int YglProgramChange( YglLevel * level, int prgid )
    level->prg[level->prgcurrent].id = 0;
 
    if (level->prg[level->prgcurrent].quads_buf == 0) {
-printf("Create quad buf %d\n", level->prgcurrent);
       glGenBuffers(1, &level->prg[level->prgcurrent].quads_buf);
    }
    if (level->prg[level->prgcurrent].textcoords_buf == 0)
@@ -3597,6 +3595,8 @@ static const char fblitbilinear_img[] =
 
 /////
 
+GLuint textureCoord_buf[2] = {0,0};
+
 static int last_upmode = 0;
 
 int YglBlitFramebuffer(u32 srcTexture, u32 targetFbo, float w, float h, float dispw, float disph) {
@@ -3627,8 +3627,6 @@ int YglBlitFramebuffer(u32 srcTexture, u32 targetFbo, float w, float h, float di
     0.0f, 1.0f,
     1.0f, 0.0f,
     1.0f, 1.0f };
-
-  GLuint textureCoord_buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
   float nbLines = yabsys.IsPal?625.0f:525.0f;
 
@@ -3748,10 +3746,10 @@ int YglBlitFramebuffer(u32 srcTexture, u32 targetFbo, float w, float h, float di
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPosition), vertexPosition, GL_STREAM_DRAW);
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(0);
-  if (textureCoord_buf[yabsys.isRotated * 8] == 0)
-     glGenBuffers(1, &textureCoord_buf[yabsys.isRotated * 8]);
-  glBindBuffer(GL_ARRAY_BUFFER, textureCoord_buf[yabsys.isRotated * 8]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(&textureCoord[yabsys.isRotated * 8]), &textureCoord[yabsys.isRotated * 8], GL_STREAM_DRAW);
+  if (textureCoord_buf[yabsys.isRotated] == 0)
+     glGenBuffers(1, &textureCoord_buf[yabsys.isRotated]);
+  glBindBuffer(GL_ARRAY_BUFFER, textureCoord_buf[yabsys.isRotated]);
+  glBufferData(GL_ARRAY_BUFFER, 8*sizeof(float), &textureCoord[yabsys.isRotated * 8], GL_STREAM_DRAW);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(1);
   glUniform1f(u_w, width);

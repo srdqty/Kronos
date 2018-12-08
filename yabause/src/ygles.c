@@ -36,7 +36,7 @@
 //#define YGLDEBUG printf
 //#define YGLDEBUG LOG
 //#define YGLDEBUG yprintf
-#define YGLLOG printf
+#define YGLLOG
 
 extern u8 * Vdp1FrameBuffer[];
 static int rebuild_frame_buffer = 0;
@@ -2637,7 +2637,6 @@ void YglRenderVDP1(void) {
       level->prg[j].setupUniform((void*)&level->prg[j], YglTM_vdp1[_Ygl->drawframe], varVdp2Regs);
     }
     if( level->prg[j].currentQuad != 0 ) {
-printf("Use current quads_buf %d\n", j);
       glUniformMatrix4fv(level->prg[j].mtxModelView, 1, GL_FALSE, (GLfloat*)&mat->m[0][0]);
       glBindBuffer(GL_ARRAY_BUFFER, level->prg[j].quads_buf);
       glBufferData(GL_ARRAY_BUFFER, level[i].prg[j].currentQuad * sizeof(float), level->prg[j].quads, GL_STREAM_DRAW);
@@ -2831,12 +2830,13 @@ void YglRenderFrameBuffer(int from, int to, Vdp2* varVdp2Regs) {
   int logwin_cc1;
   int winmode_cc;
 
-  glBindVertexArray(_Ygl->vao);
   YglGenFrameBuffer();
 
   // Out of range, do nothing
   if (_Ygl->vdp1_maxpri < from) return;
   if (_Ygl->vdp1_minpri > to) return;
+
+  glBindVertexArray(_Ygl->vao);
 
   if (_Ygl->vdp1_lineTexture != 0){ // hbalnk-in function
     Ygl_uniformVDP2DrawFramebuffer_perline(&_Ygl->renderfb, (float)(from) / 10.0f, (float)(to) / 10.0f, _Ygl->vdp1_lineTexture, varVdp2Regs);
